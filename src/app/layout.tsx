@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/assets/globals.scss";
 import MonicaLayout from "./components/monica_layout";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 
 export const metadata: Metadata = {
   title: "Nerd Studio",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <MonicaLayout>{children}</MonicaLayout>
+        <AntdRegistry>
+          <MonicaLayout>{children}</MonicaLayout>
+        </AntdRegistry>
       </body>
     </html>
   );

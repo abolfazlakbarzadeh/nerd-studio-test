@@ -1,7 +1,18 @@
-import Image from "next/image";
+import 'highlight.js/styles/default.css'
+import {MarkdownRenderer} from '@/components/icons/markdown';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24"></main>
+    <MarkdownRenderer>
+      ```javascript
+
+
+// Call the function and store the result in a variable
+var area = calculateRectangleArea(5, 3);
+
+// Print the result to the console
+console.log("The area of the rectangle is: " + area);
+```
+    </MarkdownRenderer>
   );
 }

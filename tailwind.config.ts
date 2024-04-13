@@ -19,9 +19,14 @@ const config: Config = {
         secondary: "#8a939d",
         "white-secondary": "hsl(0deg 0% 100% / 65.1%)",
         brand: "#6841ea",
+        grayblue: "rgba(79, 89, 102, .08)",
+        active: "#20262e",
+        "grayblue-8": "rgba(79, 89, 102, .08)",
+        "grayblue-400": "#c0c5cc",
+        "grayblue-600": "#545c66",
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 };
 export default config;
