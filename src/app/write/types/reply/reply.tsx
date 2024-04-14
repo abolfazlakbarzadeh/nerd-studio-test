@@ -1,6 +1,17 @@
-import { ChevronIcon, CtrlIcon, EnterIcon } from "@/components/icons";
+import {
+  ChevronIcon,
+  CtrlIcon,
+  EnterIcon,
+  SpeakerIcon,
+} from "@/components/icons";
 import { Section } from "@/components/section";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useForm } from "react-hook-form";
 import { Button, Popover, Select } from "antd/lib";
 import {
@@ -9,8 +20,11 @@ import {
   langsList,
 } from "@/components/popovers/lang_selection";
 import classNames from "classnames";
+import { Tooltip } from "react-tooltip";
+import { LoadingSpinner } from "@/components/loading_spinner";
+import { reply } from "@/services/write.service";
 
-type Form = {
+export type ReplyForm = {
   original: string;
   reply: string;
   length: string;
@@ -20,8 +34,13 @@ type Form = {
 };
 
 const ReplyType = () => {
+  const [loading, setLoading] = useState(false);
+  const abortController = useRef(new AbortController());
+  const [generatedValue, setGeneratedValue] = useState<string>();
+  const submitButton = useRef<HTMLButtonElement>(null);
+  const resultElement = useRef<HTMLTextAreaElement>(null);
   const [selectingLang, setSelectingLang] = useState(false);
-  const { handleSubmit, register, setValue, watch } = useForm<Form>({
+  const { handleSubmit, register, setValue, watch } = useForm<ReplyForm>({
     defaultValues: {
       length: "Auto",
       tone: "Auto",
@@ -30,10 +49,27 @@ const ReplyType = () => {
     },
   });
 
-  const onSubmit = () => {};
+  const onSubmit = (data: ReplyForm) => {
+    setGeneratedValue("");
+    resultElement.current?.scrollIntoView({ behavior: "smooth" });
+    setLoading(true);
+    reply(
+      abortController.current,
+      data,
+      (data) => {
+        const result = data
+          .map((item: any) => item.choices?.[0].delta.content)
+          .join("");
+        setGeneratedValue(result);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  };
 
   const radioButton = useCallback(
-    (item: string, name: keyof Form) => (
+    (item: string, name: keyof ReplyForm) => (
       <>
         <input
           type="radio"
@@ -76,6 +112,28 @@ const ReplyType = () => {
       "Formal",
     ].map((item) => <div key={item}>{radioButton(item, "tone")}</div>);
   }, [radioButton]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(generatedValue!);
+  };
+  const handleSpeech = () => {
+    const synth = window.speechSynthesis;
+    const speach = new SpeechSynthesisUtterance(generatedValue);
+
+    synth.speak(speach);
+  };
+
+  useEffect(() => {
+    const eventHandler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key == "Enter") {
+        submitButton.current?.click();
+      }
+    };
+    document.addEventListener("keydown", eventHandler);
+    return () => {
+      document.removeEventListener("keydown", eventHandler);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 h-full">
@@ -142,27 +200,88 @@ const ReplyType = () => {
             </Popover>
           </Section>
         </div>
-        <div
+        <button
+          ref={submitButton}
+          type="submit"
           className={classNames(
             "cursor-pointer flex items-center justify-center gap-2 text-[.75rem] ml-auto rounded-[2rem] w-fit min-w-[50%] min-h-[2.75rem] text-white transition-colors duration-200",
             {
-              "bg-brand": watch("original") && watch("reply"),
-              "bg-brand/50": !watch("original") || !watch("reply"),
+              "bg-brand": watch("original") && watch("reply") && !loading,
+              "bg-brand/50 pointer-events-none":
+                !watch("original") || !watch("reply") || loading,
             }
           )}
         >
+          {loading && <LoadingSpinner />}
           <div>Regenerate</div>
           <div className="flex gap-1 w-fit">
             <CtrlIcon />
             <EnterIcon />
           </div>
-        </div>
+        </button>
       </form>
       <div className="w-[1px] bg-grayblue"></div>
-      <Section className="flex-1" title="Preview">
-        <div className="text-grayblue-400 text-[.75rem]">
-          Generated content will be displayed here.
+      <Section
+        contentClassName="h-full flex flex-col gap-4"
+        className="flex-1"
+        title={
+          <div className="flex items-center justify-between">
+            <div>Preview</div>
+            <div
+              className={classNames(
+                "flex items-center gap-4 left-4 bottom-4 text-grayblue-400",
+                {
+                  hidden: !generatedValue,
+                }
+              )}
+            >
+              <SpeakerIcon
+                width={16}
+                height={16}
+                className="cursor-pointer"
+                data-tooltip-id={`speak`}
+                onClick={handleSpeech}
+              />
+
+              <Tooltip
+                id={`speak`}
+                openOnClick
+                content="Speak"
+                place="top"
+                className="!rounded-[.75rem]"
+              />
+            </div>
+          </div>
+        }
+      >
+        <div
+          className={classNames("w-full h-full auto-rtl", {
+            "bg-grayblue-8 rounded-[1rem] p-4 text-[.875rem]":
+              generatedValue || loading,
+            "text-grayblue-400 text-[.75rem]": !generatedValue,
+          })}
+        >
+          <textarea
+            rows={5}
+            ref={resultElement}
+            className="w-full h-full resize-none py-[.75rem] outline-none text-[.75rem] bg-transparent"
+            placeholder="Generated content will be displayed here."
+            readOnly={loading}
+            value={
+              generatedValue ||
+              (loading ? "Waiting for response..." : generatedValue)
+            }
+            onChange={({ target: { value } }) => setGeneratedValue(value)}
+          />
         </div>
+        {generatedValue && (
+          <div
+            className="rounded-[2rem] bg-grayblue-300 py-3 text-center text-[.875rem] cursor-pointer active:brightness-90 animated"
+            onClick={handleCopy}
+          >
+            Copy
+          </div>
+        )}
       </Section>
     </div>
   );

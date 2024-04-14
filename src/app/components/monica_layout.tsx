@@ -59,10 +59,10 @@ const MonicaLayout: FC<PropsWithChildren> = ({ children }) => {
 
   return (
     <div className="bg-nav flex sm:flex-row-reverse">
-      <div className="w-full rounded-[1rem] bg-white min-h-[100vh]">
+      <div className="w-full sm:rounded-[1rem] bg-white min-h-[100vh]">
         {children}
       </div>
-      <aside className="sm:w-[16.125rem] sm:pt-[1.625rem] sm:px-[1.25rem] flex flex-col justify-between sm:justify-start">
+      <aside className="sticky top-0 h-[100vh] sm:w-[16.125rem] sm:pt-[1.625rem] sm:px-[1.25rem] flex flex-col justify-between sm:justify-start">
         <div className="hidden justify-between items-center sm:flex">
           <div className="text-[1.25rem] text-black font-bold ">
             Nerd Studio

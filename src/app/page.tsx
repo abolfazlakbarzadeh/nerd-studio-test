@@ -1,18 +1,16 @@
-import 'highlight.js/styles/default.css'
-import {MarkdownRenderer} from '@/components/icons/markdown';
+import Markdown from "react-markdown";
 
 export default function Home() {
+  const markdown = `
+  
+  \`\`\`js
+  const project = "AI Tools";
+  const developer = "Abolfazl Akbarzadeh";
+  \`\`\`
+  `
   return (
-    <MarkdownRenderer>
-      ```javascript
-
-
-// Call the function and store the result in a variable
-var area = calculateRectangleArea(5, 3);
-
-// Print the result to the console
-console.log("The area of the rectangle is: " + area);
-```
-    </MarkdownRenderer>
+    <div className="h-full flex justify-center items-center">
+      <Markdown className="prose">{markdown}</Markdown>
+    </div>
   );
 }

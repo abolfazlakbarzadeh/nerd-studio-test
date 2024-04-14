@@ -31,3 +31,16 @@ body {
     text-wrap: balance;
   }
 }
+
+@layer base {
+  .animate-border {
+    @apply border-transparent border hover:border-brand transition-colors duration-200
+  }
+  .auto-rtl, input, textarea {
+    text-align: start;
+    unicode-bidi: plaintext;
+  }
+  .animated {
+    @apply transition-all duration-200
+  }
+}

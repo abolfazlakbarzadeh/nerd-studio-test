@@ -1,6 +1,7 @@
 import { auto, langsList } from "@/components/popovers/lang_selection";
 import { axios } from "@/http/axios";
 import axiosPkg from "axios";
+import { onDownloadProgress } from "./helpers";
 
 export const translate = (
   abortController: AbortController,
@@ -47,23 +48,7 @@ export const translate = (
       {
         signal: abortController.signal,
         responseType: "stream",
-        onDownloadProgress: (event) => {
-          const xhr = event.event.target;
-          const { response } = xhr;
-          const data = (response as string)
-            .split(/\n\n/)
-            .filter(Boolean)
-            .map((item) => {
-              const clean = item.replace("data: ", "");
-              try {
-                return JSON.parse(clean);
-              } catch (error) {
-                if (item.includes("[DONE]")) onFinish();
-                return undefined;
-              }
-            });
-          onData(data.filter(Boolean));
-        },
+        onDownloadProgress: onDownloadProgress(onData, onFinish),
       }
     )
     .catch((err) => {

@@ -34,6 +34,10 @@ export const TranslateBox: ITranslateBox = ({
   const [selectingLang, setSelectingLang] = useState(false);
 
   useEffect(() => {
+    /**
+     * check if the selected language is among the items in the button group
+     * if isn't then add it
+     *  */
     if (
       currentLangs &&
       !currentLangs
@@ -96,6 +100,7 @@ export const TranslateBox: ITranslateBox = ({
               selected={detected?.id || selectedLang.id}
               onSelected={(selected) => {
                 onLangChange(langsList.find((item) => item.id == selected)!);
+                // add selected lang to button group items that renders langs
                 setCurrentLangs(
                   _.uniqBy(
                     [
@@ -125,8 +130,7 @@ export const TranslateBox: ITranslateBox = ({
         className={classNames(
           "bg-grayblue-8 relative rounded-[1rem] overflow-hidden",
           {
-            "border-transparent border hover:border-brand transition-colors duration-200":
-              input,
+            "animate-border": input,
           }
         )}
       >

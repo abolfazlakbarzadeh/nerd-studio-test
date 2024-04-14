@@ -22,6 +22,7 @@ const config: Config = {
         grayblue: "rgba(79, 89, 102, .08)",
         active: "#20262e",
         "grayblue-8": "rgba(79, 89, 102, .08)",
+        "grayblue-300": "#dadee3",
         "grayblue-400": "#c0c5cc",
         "grayblue-600": "#545c66",
       },
