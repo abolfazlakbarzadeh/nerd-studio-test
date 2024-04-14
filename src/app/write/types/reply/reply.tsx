@@ -3,7 +3,11 @@ import { Section } from "@/components/section";
 import React, { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button, Popover, Select } from "antd/lib";
-import { LangSelection, langs } from "@/components/popovers/lang_selection";
+import {
+  LangSelection,
+  langs,
+  langsList,
+} from "@/components/popovers/lang_selection";
 import classNames from "classnames";
 
 type Form = {
@@ -132,7 +136,7 @@ const ReplyType = () => {
               }
             >
               <div className="cursor-pointer min-w-[8.75rem] flex justify-between items-center px-[.75rem] py-[.315rem] rounded-[1rem] bg-grayblue w-fit text-[.75rem]">
-                {langs.find((item) => item.id == watch("language"))?.title}{" "}
+                {langsList.find((item) => item.id == watch("language"))?.title}{" "}
                 <ChevronIcon />
               </div>
             </Popover>

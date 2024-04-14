@@ -12,7 +12,12 @@ import { Tooltip } from "react-tooltip";
 import { Popover } from "antd/lib";
 import * as _ from "lodash";
 import { ButtonGroup } from "@/app/components/button_group";
-import { LangSelection, langs } from "@/components/popovers/lang_selection";
+import {
+  LangSelection,
+  auto,
+  langs,
+  langsList,
+} from "@/components/popovers/lang_selection";
 
 export const TranslateBox: ITranslateBox = ({
   input,
@@ -21,10 +26,11 @@ export const TranslateBox: ITranslateBox = ({
   selectedLang,
   onLangChange,
   value,
+  loading,
   onChange,
   ...props
 }) => {
-  const [currentLangs, setCurrentLangs] = useState(langs);
+  const [currentLangs, setCurrentLangs] = useState(langsList);
   const [selectingLang, setSelectingLang] = useState(false);
 
   useEffect(() => {
@@ -32,12 +38,12 @@ export const TranslateBox: ITranslateBox = ({
       currentLangs &&
       !currentLangs
         .slice(0, input ? 2 : 3)
-        .find((item) => item.id == selectedLang)
+        .find((item: any) => item.id == selectedLang.id)
     ) {
       setCurrentLangs(
         _.uniqBy(
           [
-            currentLangs.find((item) => item.id == selectedLang)!,
+            currentLangs.find((item: any) => item.id == selectedLang.id)!,
             ...currentLangs,
           ].filter(Boolean),
           (item) => item?.id
@@ -50,17 +56,32 @@ export const TranslateBox: ITranslateBox = ({
     navigator.clipboard.writeText(value!);
   }
 
+  const handleSpeech = () => {
+    const synth = window.speechSynthesis;
+    const speach = new SpeechSynthesisUtterance(value);
+
+    synth.speak(speach);
+  };
+
   return (
     <div className={classNames("flex flex-col gap-2", className)} {...props}>
       <div className="flex items-center gap-4">
         <ButtonGroup
           items={
             input
-              ? [{ id: "auto", title: "Auto" }, ...currentLangs].slice(0, 3)
+              ? [
+                  {
+                    ...auto,
+                    title: detected ? `${detected.title} - Auto` : "Auto",
+                  },
+                  ...currentLangs,
+                ].slice(0, 3)
               : currentLangs
           }
-          selectedItem={selectedLang}
-          onSelect={onLangChange}
+          selectedItem={detected ? auto.id : selectedLang.id}
+          onSelect={(id) =>
+            onLangChange([auto, ...langsList].find((item) => item.id == id)!)
+          }
         />
         <Popover
           open={selectingLang}
@@ -72,13 +93,13 @@ export const TranslateBox: ITranslateBox = ({
           rootClassName="rounded-[1.5rem] overflow-hidden border"
           content={
             <LangSelection
-              selected={selectedLang}
+              selected={detected?.id || selectedLang.id}
               onSelected={(selected) => {
-                onLangChange(selected);
+                onLangChange(langsList.find((item) => item.id == selected)!);
                 setCurrentLangs(
                   _.uniqBy(
                     [
-                      langs.find((item) => item.id == selected)!,
+                      langsList.find((item) => item.id == selected)!,
                       ...currentLangs,
                     ],
                     (item) => item?.id
@@ -115,7 +136,7 @@ export const TranslateBox: ITranslateBox = ({
           onChange={({ target: { value } }) => onChange?.(value)}
           className="resize-none w-full bg-transparent px-4 py-[.75rem] outline-none text-[.875rem]"
           readOnly={!input}
-          placeholder="Enter text"
+          placeholder={loading ? "Waiting for response..." : "Enter text"}
         />
         <div className="absolute flex items-center gap-4 left-4 bottom-4 text-grayblue-400">
           <SpeakerIcon
@@ -123,6 +144,7 @@ export const TranslateBox: ITranslateBox = ({
             height={16}
             className="cursor-pointer"
             data-tooltip-id={`${input}-speak`}
+            onClick={handleSpeech}
           />
           <CopyIcon
             width={16}
@@ -131,7 +153,7 @@ export const TranslateBox: ITranslateBox = ({
             data-tooltip-id={`${input}-copy`}
             onClick={handleCopy}
           />
-          {value && (
+          {value && input && (
             <TrashIcon
               width={16}
               height={16}
@@ -163,7 +185,17 @@ export const TranslateBox: ITranslateBox = ({
             className="!rounded-[.75rem]"
           />
         </div>
+
+        {loading &&
+          (!value ? (
+            <div className="bg-grayblue-8 absolute inset-0" />
+          ) : (
+            <div className="absolute bottom-4 left-[50%] text-grayblue-600 text-[.625rem] translate-x-[-50%]">
+              Generating...
+            </div>
+          ))}
       </div>
     </div>
   );
 };
+export default TranslateBox;
