@@ -23,6 +23,8 @@ import classNames from "classnames";
 import { compose } from "@/services/write.service";
 import { LoadingSpinner } from "@/components/loading_spinner";
 import { Tooltip } from "react-tooltip";
+import Markdown from "react-markdown";
+import { MarkdownRender } from "@/components/markdown";
 
 export type ComposeForm = {
   value: string;
@@ -36,7 +38,8 @@ const ComposeType = () => {
   const [selectingLang, setSelectingLang] = useState(false);
   const [loading, setLoading] = useState(false);
   const abortController = useRef(new AbortController());
-  const resultElement = useRef<HTMLTextAreaElement>(null);
+  // const resultElement = useRef<HTMLTextAreaElement>(null);
+  const resultElement = useRef<unknown>(null);
   const [generatedValue, setGeneratedValue] = useState<string>();
   const submitButton = useRef<HTMLButtonElement>(null);
   const { handleSubmit, register, setValue, watch } = useForm<ComposeForm>({
@@ -50,7 +53,7 @@ const ComposeType = () => {
 
   const onSubmit = (data: ComposeForm) => {
     setGeneratedValue("");
-    resultElement.current?.scrollIntoView({ behavior: "smooth" });
+    // resultElement.current?.scrollIntoView({ behavior: "smooth" });
     setLoading(true);
     compose(
       abortController.current,
@@ -258,17 +261,15 @@ const ComposeType = () => {
             "text-grayblue-400 text-[.75rem]": !generatedValue,
           })}
         >
-          <textarea
-            ref={resultElement}
-            rows={5}
+          {!generatedValue &&
+            !loading &&
+            "Generated content will be displayed here."}
+          <MarkdownRender
             className="w-full h-full resize-none py-[.75rem] outline-none text-[.75rem] bg-transparent"
-            placeholder="Generated content will be displayed here."
-            readOnly={loading}
-            value={
+            content={
               generatedValue ||
               (loading ? "Waiting for response..." : generatedValue)
             }
-            onChange={({ target: { value } }) => setGeneratedValue(value)}
           />
         </div>
         {generatedValue && (
